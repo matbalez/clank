@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { withPayment } from "@moneydevkit/nextjs/server";
 
-import { registrationSchema, buildBip353RecordName } from "@/lib/ama";
+import { registrationSchema, buildBip353RecordName } from "@/lib/clank";
 import { db } from "@/lib/db";
 import { publishPaymentInstructionTxt } from "@/lib/dns-publisher";
 import { buildRegistrationPaymentConfig } from "@/lib/mdk402";
@@ -27,12 +27,12 @@ async function createRegistrationHandler(request) {
     );
   }
 
-  const namespaceDomain = process.env.AMA_NAMESPACE_DOMAIN;
+  const namespaceDomain = process.env.CLANK_NAMESPACE_DOMAIN;
   if (!namespaceDomain) {
     return NextResponse.json(
       {
         error: "misconfigured",
-        details: "AMA_NAMESPACE_DOMAIN is required"
+        details: "CLANK_NAMESPACE_DOMAIN is required"
       },
       { status: 500 }
     );

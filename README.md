@@ -1,4 +1,4 @@
-# AMA (Agent Money Address) API
+# Clank API
 
 Next.js backend API for registering human-readable Bitcoin payment handles using DNS payment instructions (BIP-353) and BIP-321 URIs.
 
@@ -7,7 +7,7 @@ Next.js backend API for registering human-readable Bitcoin payment handles using
 - Exposes `POST /api/v1/registrations`
 - Validates `username` and `bip321Uri`
 - Charges via MDK 402 wrapper at a fixed sat amount (default `200`) using `withPayment`
-- Stores registrations in SQLite via Prisma
+- Stores registrations via Prisma
 - Publishes BIP-353 TXT records to DNS (Cloudflare API) after successful paid registration
 
 ## Request shape
@@ -28,8 +28,8 @@ Next.js backend API for registering human-readable Bitcoin payment handles using
   "id": "...",
   "username": "satoshi",
   "bip321Uri": "bitcoin:bc1...?...",
-  "namespaceDomain": "foo.com",
-  "bip353RecordName": "satoshi.user._bitcoin-payment.foo.com",
+  "namespaceDomain": "clank.money",
+  "bip353RecordName": "satoshi.user._bitcoin-payment.clank.money",
   "txtValue": "bitcoin:bc1...?...",
   "status": "ACTIVE",
   "createdAt": "2026-02-19T00:00:00.000Z"
@@ -48,11 +48,11 @@ If payment succeeds but DNS publish fails, the API still records the paid regist
 
 Copy `.env.example` to `.env` and fill values.
 
-- `AMA_NAMESPACE_DOMAIN`: your purchased parent domain
-- `AMA_REGISTER_PRICE_SATS`: sats charged per registration (default `200`)
+- `CLANK_NAMESPACE_DOMAIN`: your purchased parent domain
+- `CLANK_REGISTER_PRICE_SATS`: sats charged per registration (default `200`)
 - `MDK_402_EXPIRY_SECONDS`: optional token/invoice expiry (default `900`)
-- `AMA_DNS_PROVIDER`: DNS backend (`cloudflare` currently supported)
-- `AMA_DNS_TTL_SECONDS`: TXT TTL (default `60`)
+- `CLANK_DNS_PROVIDER`: DNS backend (`cloudflare` currently supported)
+- `CLANK_DNS_TTL_SECONDS`: TXT TTL (default `60`)
 - `CF_ZONE_ID`, `CF_API_TOKEN`: Cloudflare zone + token with DNS edit permissions
 - `MDK_ACCESS_TOKEN`, `MDK_MNEMONIC`: required MDK credentials
 

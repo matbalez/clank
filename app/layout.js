@@ -1,5 +1,5 @@
 export const metadata = {
-  title: "AMA Service",
+  title: "Clank Service",
   description: "Agent Money Address registration API"
 };
 
