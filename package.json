@@ -12,6 +12,7 @@
     "prisma:push": "prisma db push"
   },
   "dependencies": {
+    "@moneydevkit/lightning-js": "^0.1.71",
     "@moneydevkit/nextjs": "^0.11.0",
     "@prisma/client": "^6.5.0",
     "next": "15.5.12",
