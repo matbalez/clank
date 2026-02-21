@@ -1,7 +1,11 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { runRegistrationFlow, runUpdateFlow } from "../lib/registration-service.js";
+import {
+  runAvailabilityFlow,
+  runRegistrationFlow,
+  runUpdateFlow
+} from "../lib/registration-service.js";
 
 const CREATED_AT = new Date("2026-02-21T00:00:00.000Z");
 const UPDATED_AT = new Date("2026-02-21T00:01:00.000Z");
@@ -24,6 +28,59 @@ function makeRegistration(overrides = {}) {
     ...overrides
   };
 }
+
+test("runAvailabilityFlow returns available=true when username is free", async () => {
+  const db = {
+    registration: {
+      findUnique: async () => null
+    }
+  };
+
+  const result = await runAvailabilityFlow({
+    query: { username: "Satoshi" },
+    db
+  });
+
+  assert.equal(result.status, 200);
+  assert.equal(result.payload.username, "satoshi");
+  assert.equal(result.payload.available, true);
+  assert.equal(result.payload.registrationStatus, null);
+});
+
+test("runAvailabilityFlow returns available=false when username exists", async () => {
+  const db = {
+    registration: {
+      findUnique: async () => ({
+        id: "reg_123",
+        status: "ACTIVE"
+      })
+    }
+  };
+
+  const result = await runAvailabilityFlow({
+    query: { username: "satoshi" },
+    db
+  });
+
+  assert.equal(result.status, 200);
+  assert.equal(result.payload.username, "satoshi");
+  assert.equal(result.payload.available, false);
+  assert.equal(result.payload.registrationStatus, "ACTIVE");
+});
+
+test("runAvailabilityFlow validates username format", async () => {
+  const result = await runAvailabilityFlow({
+    query: { username: "Bad_Name" },
+    db: {
+      registration: {
+        findUnique: async () => null
+      }
+    }
+  });
+
+  assert.equal(result.status, 400);
+  assert.equal(result.payload.error, "invalid_request");
+});
 
 test("runRegistrationFlow creates and publishes a registration", async () => {
   const createCalls = [];
