@@ -1,11 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import {
-  runAvailabilityFlow,
-  runRegistrationFlow,
-  runUpdateFlow
-} from "../lib/registration-service.js";
+import { runRegistrationPrecheck, runRegistrationFlow, runUpdateFlow } from "../lib/registration-service.js";
 
 const CREATED_AT = new Date("2026-02-21T00:00:00.000Z");
 const UPDATED_AT = new Date("2026-02-21T00:01:00.000Z");
@@ -29,48 +25,48 @@ function makeRegistration(overrides = {}) {
   };
 }
 
-test("runAvailabilityFlow returns available=true when username is free", async () => {
-  const db = {
-    registration: {
-      findUnique: async () => null
+test("runRegistrationPrecheck returns null when name is available", async () => {
+  const result = await runRegistrationPrecheck({
+    body: {
+      username: "Satoshi",
+      bip321Uri: "bitcoin:bc1qnewinstruction"
+    },
+    namespaceDomain: "clank.money",
+    db: {
+      registration: {
+        findUnique: async () => null
+      }
     }
-  };
-
-  const result = await runAvailabilityFlow({
-    query: { username: "Satoshi" },
-    db
   });
 
-  assert.equal(result.status, 200);
-  assert.equal(result.payload.username, "satoshi");
-  assert.equal(result.payload.available, true);
-  assert.equal(result.payload.registrationStatus, null);
+  assert.equal(result, null);
 });
 
-test("runAvailabilityFlow returns available=false when username exists", async () => {
-  const db = {
-    registration: {
-      findUnique: async () => ({
-        id: "reg_123",
-        status: "ACTIVE"
-      })
+test("runRegistrationPrecheck blocks taken usernames", async () => {
+  const result = await runRegistrationPrecheck({
+    body: {
+      username: "satoshi",
+      bip321Uri: "bitcoin:bc1qnewinstruction"
+    },
+    namespaceDomain: "clank.money",
+    db: {
+      registration: {
+        findUnique: async () => ({ id: "reg_123" })
+      }
     }
-  };
-
-  const result = await runAvailabilityFlow({
-    query: { username: "satoshi" },
-    db
   });
 
-  assert.equal(result.status, 200);
-  assert.equal(result.payload.username, "satoshi");
-  assert.equal(result.payload.available, false);
-  assert.equal(result.payload.registrationStatus, "ACTIVE");
+  assert.equal(result.status, 409);
+  assert.equal(result.payload.error, "username_unavailable");
 });
 
-test("runAvailabilityFlow validates username format", async () => {
-  const result = await runAvailabilityFlow({
-    query: { username: "Bad_Name" },
+test("runRegistrationPrecheck validates body", async () => {
+  const result = await runRegistrationPrecheck({
+    body: {
+      username: "bad_name",
+      bip321Uri: "not-a-bitcoin-uri"
+    },
+    namespaceDomain: "clank.money",
     db: {
       registration: {
         findUnique: async () => null

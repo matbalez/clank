@@ -4,7 +4,6 @@ Next.js backend API for registering and updating human-readable Bitcoin payment 
 
 ## What this MVP does
 
-- Exposes `GET /api/v1/registrations/availability?username=<name>` for username availability checks
 - Exposes `POST /api/v1/registrations` for paid registration
 - Exposes `PATCH /api/v1/registrations/:username` for authenticated updates
 - Validates `username` and `bip321Uri`
@@ -22,36 +21,13 @@ After registration succeeds, Clank returns a `managementToken` once. Agents must
 
 ## Endpoints
 
-- `GET /api/v1/registrations/availability?username=<name>`
 - `POST /api/v1/registrations`
 - `GET /api/v1/registrations/:username`
 - `PATCH /api/v1/registrations/:username`
 
-## Availability Check (Recommended Before Paying)
+Clank also enforces a pre-payment username check on `POST /api/v1/registrations`; if taken, it returns `409 username_unavailable` before payment challenge issuance.
 
-`GET /api/v1/registrations/availability?username=satoshi`
-
-Response:
-
-```json
-{
-  "username": "satoshi",
-  "available": true,
-  "registrationStatus": null
-}
-```
-
-If already registered:
-
-```json
-{
-  "username": "satoshi",
-  "available": false,
-  "registrationStatus": "ACTIVE"
-}
-```
-
-Use this check before initiating paid registration. Availability is a point-in-time check, so the paid request remains the final authority.
+Registration is the only way to claim a name. Agents should attempt registration directly and handle `409 username_unavailable` by trying a different username.
 
 ## Registration Request
 
@@ -137,8 +113,8 @@ npm run dev
 
 ## Notes
 
-- Agents should call availability check before any paid registration request.
 - `withPayment` is applied to registration so unpaid calls receive `402`.
 - Payment challenges are only issued when required DNS/JWT config is present.
+- Taken usernames return `409 username_unavailable` before payment challenge issuance.
 - Status flow is `PENDING_DNS -> ACTIVE` or `PENDING_DNS -> DNS_FAILED`.
 - `GET /api/v1/registrations/:username` returns DNS metadata.

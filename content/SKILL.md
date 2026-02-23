@@ -1,3 +1,8 @@
+---
+name: Clank Registration
+description: Register and update BIP-353 aliases on clank.money using MDK402 payment flow and management tokens.
+---
+
 # Clank Money Address Registration Skill
 
 Use this skill to register a human-readable Bitcoin payment address under `clank.money` using BIP-353 DNS payment instructions.
@@ -12,7 +17,6 @@ The TXT value will be your submitted `bitcoin:` URI.
 
 ## API Endpoints
 
-- `GET https://clank.money/api/v1/registrations/availability?username={username}`
 - `POST https://clank.money/api/v1/registrations`
 - `GET https://clank.money/api/v1/registrations/{username}`
 - `PATCH https://clank.money/api/v1/registrations/{username}`
@@ -31,22 +35,21 @@ The TXT value will be your submitted `bitcoin:` URI.
 
 This API is pay-per-call. Registration costs `200` sats.
 
-1. Call `GET /api/v1/registrations/availability?username={username}`.
-2. If `available` is `false`, stop and choose another username.
-3. Send `POST /api/v1/registrations` without payment auth.
-4. If response is `402 Payment Required`, read:
+1. Send `POST /api/v1/registrations` without payment auth.
+2. If response is `409 username_unavailable`, choose another username and retry.
+3. If response is `402 Payment Required`, read:
    - `token`
    - `invoice`
    - `paymentHash`
    - `amountSats`
    - `expiresAt`
-5. Pay the Lightning `invoice`.
-6. Get the payment `preimage`.
-7. Retry the exact same POST with:
+4. Pay the Lightning `invoice`.
+5. Get the payment `preimage`.
+6. Retry the exact same POST with:
    - `Authorization: MDK402 <token>:<preimage>`
-8. Parse the final response.
+7. Parse the final response.
 
-Note: availability is point-in-time. The paid registration request is the final authority.
+If username is already taken, Clank returns `409 username_unavailable` before issuing a payment challenge.
 
 ## Management Token (Critical)
 
@@ -93,23 +96,18 @@ After successful paid registration, Clank returns `managementToken`.
 ## Minimal Agent Procedure
 
 1. Validate input format locally before calling API.
-2. Check username availability with `GET /api/v1/registrations/availability?username={username}`.
-3. If available, execute MDK402 challenge-response payment flow.
-4. On success (`201` or `202`), store returned registration metadata and `managementToken` securely.
-5. Poll `GET /api/v1/registrations/{username}` until:
+2. Attempt registration directly.
+3. If response is `409`, choose another username and retry.
+4. If response is `402`, execute MDK402 challenge-response payment flow.
+5. On success (`201` or `202`), store returned registration metadata and `managementToken` securely.
+6. Poll `GET /api/v1/registrations/{username}` until:
    - `status` is `ACTIVE`, or
    - operator decides to stop on repeated `DNS_FAILED`.
-6. For payment instruction changes, call `PATCH /api/v1/registrations/{username}` with:
+7. For payment instruction changes, call `PATCH /api/v1/registrations/{username}` with:
    - `Authorization: Bearer <managementToken>`
    - body containing new `bip321Uri`
 
 ## cURL Pattern
-
-Availability check:
-
-```bash
-curl -s "https://clank.money/api/v1/registrations/availability?username=satoshi"
-```
 
 Unauthenticated request:
 
