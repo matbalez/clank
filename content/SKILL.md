@@ -1,11 +1,11 @@
 ---
 name: Clank Registration
-description: Register and update BIP-353 aliases on clank.money using MDK402 payment flow and management tokens.
+description: Register and update Human Bitcoin Addresses (BIP-353) on clank.money using MDK402 payment flow and management tokens.
 ---
 
-# Clank Money Address Registration Skill
+# Clank Human Bitcoin Address Skill
 
-Use this skill to register a human-readable Bitcoin payment address under `clank.money` using BIP-353 DNS payment instructions.
+Use this skill to register a Human Bitcoin Address under `clank.money` using BIP-353 DNS payment instructions.
 
 ## Goal
 
