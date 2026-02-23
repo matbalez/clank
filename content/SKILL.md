@@ -1,6 +1,6 @@
 ---
 name: Clank Registration
-description: Register and update Human Bitcoin Addresses (BIP-353) on clank.money using MDK402 payment flow and management tokens.
+description: Register and update Human Bitcoin Addresses (BIP-353) on clank.money using MoneyDevKit L402 flow and management tokens.
 ---
 
 # Clank Human Bitcoin Address Skill
@@ -31,14 +31,19 @@ The TXT value will be your submitted `bitcoin:` URI.
   - must start with `bitcoin:`
   - should be a valid BIP-321 URI
 
-## Payment Flow (MDK402)
+## Payment Flow (L402)
 
 This API is pay-per-call. Registration costs `200` sats.
+
+Clank uses MoneyDevKit L402 (`@moneydevkit/nextjs` `0.12.0`), so the wire format is:
+
+- `Authorization: L402 <macaroon>:<preimage>`
+- 402 challenge payload fields: `macaroon`, `invoice`, `paymentHash`, `amountSats`, `expiresAt`
 
 1. Send `POST /api/v1/registrations` without payment auth.
 2. If response is `409 username_unavailable`, choose another username and retry.
 3. If response is `402 Payment Required`, read:
-   - `token`
+   - `macaroon`
    - `invoice`
    - `paymentHash`
    - `amountSats`
@@ -46,7 +51,7 @@ This API is pay-per-call. Registration costs `200` sats.
 4. Pay the Lightning `invoice`.
 5. Get the payment `preimage`.
 6. Retry the exact same POST with:
-   - `Authorization: MDK402 <token>:<preimage>`
+   - `Authorization: L402 <macaroon>:<preimage>`
 7. Parse the final response.
 
 If username is already taken, Clank returns `409 username_unavailable` before issuing a payment challenge.
@@ -98,7 +103,7 @@ After successful paid registration, Clank returns `managementToken`.
 1. Validate input format locally before calling API.
 2. Attempt registration directly.
 3. If response is `409`, choose another username and retry.
-4. If response is `402`, execute MDK402 challenge-response payment flow.
+4. If response is `402`, execute the L402 challenge-response payment flow.
 5. On success (`201` or `202`), store returned registration metadata and `managementToken` securely.
 6. Poll `GET /api/v1/registrations/{username}` until:
    - `status` is `ACTIVE`, or
@@ -122,7 +127,7 @@ Authenticated retry (after paying invoice):
 ```bash
 curl -s -X POST https://clank.money/api/v1/registrations \
   -H "content-type: application/json" \
-  -H "Authorization: MDK402 <token>:<preimage>" \
+  -H "Authorization: L402 <macaroon>:<preimage>" \
   --data '{"username":"satoshi","bip321Uri":"bitcoin:bc1qexampleaddresshere"}'
 ```
 
