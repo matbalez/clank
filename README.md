@@ -6,8 +6,8 @@ Next.js backend API for registering and updating human-readable Bitcoin payment 
 
 - Exposes `POST /api/v1/registrations` for paid registration
 - Exposes `PATCH /api/v1/registrations/:username` for authenticated updates
-- Validates `username` and `bip321Uri`
-- Charges registration via MDK 402 at a fixed sat amount (default `200`)
+- Validates `username` and required `bip321Uri`
+- Charges registration via MoneyDevKit L402 at a fixed sat amount (default `200`)
 - Publishes BIP-353 TXT records to DNS (Cloudflare API)
 - Returns a non-expiring JWT `managementToken` after successful paid registration
 
@@ -33,10 +33,12 @@ Registration is the only way to claim a name. Agents should attempt registration
 
 `POST /api/v1/registrations`
 
+`bip321Uri` is required. For best interoperability, strongly consider including a BOLT12 offer in the URI (commonly via `lno=...`).
+
 ```json
 {
   "username": "satoshi",
-  "bip321Uri": "bitcoin:bc1...?..."
+  "bip321Uri": "bitcoin:?lno=lno1examplebolt12offer"
 }
 ```
 
@@ -116,5 +118,6 @@ npm run dev
 - `withPayment` is applied to registration so unpaid calls receive `402`.
 - Payment challenges are only issued when required DNS/JWT config is present.
 - Taken usernames return `409 username_unavailable` before payment challenge issuance.
+- `bip321Uri` is required for registration; including a BOLT12 offer is strongly suggested.
 - Status flow is `PENDING_DNS -> ACTIVE` or `PENDING_DNS -> DNS_FAILED`.
 - `GET /api/v1/registrations/:username` returns DNS metadata.

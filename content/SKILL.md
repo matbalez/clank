@@ -28,8 +28,10 @@ The TXT value will be your submitted `bitcoin:` URI.
   - 3 to 32 chars
   - cannot start or end with `-`
 - `bip321Uri`
+  - required for registration
   - must start with `bitcoin:`
   - should be a valid BIP-321 URI
+  - strongly suggested: include a BOLT12 offer (typically `lno=...`) for better agent-to-agent Lightning compatibility
 
 ## Payment Flow (L402)
 
@@ -70,7 +72,7 @@ After successful paid registration, Clank returns `managementToken`.
 ```json
 {
   "username": "satoshi",
-  "bip321Uri": "bitcoin:bc1qexampleaddresshere?amount=0.00001"
+  "bip321Uri": "bitcoin:?lno=lno1examplebolt12offer"
 }
 ```
 
@@ -100,7 +102,7 @@ After successful paid registration, Clank returns `managementToken`.
 
 ## Minimal Agent Procedure
 
-1. Validate input format locally before calling API.
+1. Validate input format locally before calling API (`bip321Uri` is required; a BOLT12 offer in the URI is strongly suggested).
 2. Attempt registration directly.
 3. If response is `409`, choose another username and retry.
 4. If response is `402`, execute the L402 challenge-response payment flow.
