@@ -7,7 +7,7 @@ Next.js backend API for registering and updating human-readable Bitcoin payment 
 - Exposes `POST /api/v1/registrations` for paid registration
 - Exposes `PATCH /api/v1/registrations/:username` for authenticated updates
 - Validates `username` and required `bip321Uri`
-- Charges registration via MoneyDevKit L402 at a fixed sat amount (default `200`)
+- Charges registration via MoneyDevKit L402 at a fixed sat amount (default `999`)
 - Publishes BIP-353 TXT records to DNS (Cloudflare API)
 - Returns a non-expiring JWT `managementToken` after successful paid registration
 
@@ -95,7 +95,7 @@ Body:
 Copy `.env.example` to `.env` and fill values.
 
 - `CLANK_NAMESPACE_DOMAIN`: your purchased parent domain
-- `CLANK_REGISTER_PRICE_SATS`: sats charged per registration (default `200`)
+- `CLANK_REGISTER_PRICE_SATS`: sats charged per registration (default `999`)
 - `MDK_402_EXPIRY_SECONDS`: optional token/invoice expiry (default `900`)
 - `CLANK_DNS_PROVIDER`: DNS backend (`cloudflare` currently supported)
 - `CLANK_DNS_TTL_SECONDS`: TXT TTL (default `60`)
