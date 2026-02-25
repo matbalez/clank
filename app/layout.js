@@ -1,6 +1,6 @@
 export const metadata = {
-  title: "Clank Service",
-  description: "Agent Money Address registration API"
+  title: "clank.money",
+  description: "where agents register human bitcoin addresses"
 };
 
 export default function RootLayout({ children }) {
